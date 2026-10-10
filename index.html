@@ -455,8 +455,14 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
 
   /* step 1 target control */
   .target{display:flex;flex-direction:column;align-items:center;gap:var(--space-3)}
-  .callout{font-size:0.75rem;font-weight:var(--weight-bold);white-space:nowrap}
-  .callout .arrow{width:11px;height:11px;display:inline-block;animation:nudge 1.5s var(--ease-inout) infinite}
+  .callout{
+    background:var(--primary);color:var(--primary-foreground);
+    font-size:var(--text-sm);font-weight:var(--weight-extrabold);letter-spacing:.04em;white-space:nowrap;
+    padding:var(--space-3) var(--space-6);gap:var(--space-3);margin-bottom:var(--space-2);
+    animation:cta-halo 2.4s var(--ease-out) infinite,callout-breathe 1.5s var(--ease-inout) infinite;
+  }
+  @keyframes callout-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+  .callout .arrow{width:14px;height:14px;display:inline-block;animation:nudge 1.5s var(--ease-inout) infinite}
   @keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
 
   /* controls */
