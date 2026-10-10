@@ -28,4 +28,12 @@ Both are at the top of the last `<script>` block in `index.html`:
 - The PDF tool loads from `vendor/` first, then from two CDNs. If none loads, the visitor sees what to do and a Try again button.
 - A lead is posted as JSON, then as a form post if the browser blocks that. If both fail it is kept in the visitor's browser (up to 5 leads, 7 days) and sent again on the next visit or when the connection returns. Every lead carries a `submissionId`, so a duplicate can be spotted.
 - The thank-you screen always says whether the visitor still has to wait or can close the page, and offers an "Open the PDF in a new tab" link in case the download did not start.
-- "Something not working? Show details" at the bottom of the page opens a step by step log (also printed to the browser console with the `[freedom-calculator]` prefix). Ask the visitor to press Copy report and send it.
+- "Something not working? Show details" at the bottom of the page opens the report. Ask the visitor to press Copy report and send it.
+
+## Logging
+
+Every line has the time, the milliseconds since the page opened, a session id, a running number and a level (INFO, WARN, ERROR). The last 500 lines are kept in the visitor's browser across visits and are also printed to the browser console with the `[freedom-calculator]` prefix.
+
+What is logged: the environment when the page opens (version, browser, viewport, connection, frame, referrer), every button press and changed field, every result shown, each step of loading the PDF tool and fonts with timings, each step of building and handing over the PDF, each lead attempt with HTTP status and timing, retries of waiting leads, script errors with a stack, files that fail to load, blocked requests, lost connection, and the page being hidden or closed while work is running. Name and email are never written in full.
+
+Each lead sent to the webhook also carries a `client` field with the version, session id, browser, and the last five warnings or errors of that visit.
