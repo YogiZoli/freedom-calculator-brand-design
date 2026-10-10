@@ -561,11 +561,24 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
     .plan{padding:var(--space-7)}
     .wrap{padding-top:var(--space-8);gap:var(--space-5)}
   }
+  /* ---------- status, details panel ---------- */
+  .notice[data-kind="ok"]{background:var(--success-surface);color:var(--success)}
+  .notice[data-kind="work"]{background:var(--surface-alt);color:var(--neutral-600);border-color:var(--border)}
+  .notice[data-kind="warn"]{background:var(--danger-surface);color:var(--danger-text);border-color:var(--danger-border)}
+  .notice[data-kind="work"]::before{content:"";display:inline-block;width:8px;height:8px;border-radius:var(--radius-full);background:var(--live);margin-right:var(--space-3);animation:cta-breathe 1.2s var(--ease-inout) infinite}
+  .counter button[disabled]{opacity:.4;cursor:default}
+  .diag{margin:0;text-align:center}
+  .diagbtn{appearance:none;background:none;border:0;padding:var(--space-3);font:inherit;font-size:var(--text-xs);color:var(--muted-foreground);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+  .diagpanel{display:flex;flex-direction:column;gap:var(--space-3);align-items:flex-start}
+  .diagpanel textarea{width:100%;font-family:var(--font-mono);font-size:var(--text-xs);line-height:1.5;border:var(--border-width) solid var(--input);border-radius:var(--radius-md);padding:var(--space-4);background:var(--surface);color:var(--foreground);resize:vertical}
 </style>
 </head>
 <body>
 
 <div class="wrap">
+
+  <p class="notice err" id="fatal" role="alert" hidden>The calculator could not start in this browser. Reload the page. If it keeps happening, use Show details at the bottom of the page and send the report.</p>
+  <noscript><p class="notice err">This calculator needs JavaScript. Turn it on in your browser and reload the page.</p></noscript>
 
   <header>
     <h1>FREEDOM Calculator</h1>
@@ -601,6 +614,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
         <span class="sum" id="costTotal">$0</span>
         <button class="btn btn-secondary" type="button" id="useCosts">Use as my goal</button>
       </div>
+      <p class="hint" id="costMsg" role="status" style="margin-top:10px" hidden></p>
     </div>
   </details>
 
@@ -709,7 +723,8 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
     </div>
     <div id="planThanks" class="planform" hidden>
       <h2 id="thanksTitle" tabindex="-1">Your Freedom Plan is ready</h2>
-      <p class="notice ok" id="thanksMsg" role="status">Check your downloads for the PDF.</p>
+      <p class="notice" id="thanksMsg" role="status" aria-live="polite" data-kind="work">Working: building your PDF. Keep this page open, it takes a few seconds.</p>
+      <p class="hint" id="openRow" hidden>Download did not start? <a class="link" id="openPdf" href="#" target="_blank" rel="noopener">Open the PDF in a new tab</a></p>
       <p class="cta">Next step: build this plan with a group in my 6-pillar cohort program. <a class="link" id="programLink" href="#" target="_blank" rel="noopener">See the program</a></p>
       <div class="planactions">
         <button class="btn btn-ghost" type="button" id="planAgain">Download the PDF again</button>
@@ -721,9 +736,15 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
     Using YOUR GoHighLevel affiliate link: 40% commission for the life of the account. OR 100% if you set up a GHL Agency (yes, 100%, very generous from GHL) and handle onboarding, customer service and invoicing yourself.
     <span class="disc">Not financial advice, just what worked for me.</span>
   </footer>
+
+  <p class="diag"><button type="button" class="diagbtn" id="diagToggle" aria-expanded="false" aria-controls="diagPanel">Something not working? Show details</button></p>
+  <div id="diagPanel" class="diagpanel" hidden>
+    <p class="hint">This report shows each step the page took, so the cause can be found. It holds no passwords. Copy it and send it to support.</p>
+    <textarea id="diagText" readonly rows="10" aria-label="Technical report"></textarea>
+    <button class="btn btn-ghost" type="button" id="diagCopy">Copy report</button>
+  </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ===== SETTINGS: the two things to edit ===== */
 var WEBHOOK_URL = "";   // GHL inbound webhook. Empty = no POST, the PDF is still delivered.
@@ -731,7 +752,27 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
 /* ============================================ */
 
 (function(){
+  var VERSION = "1.1.0";
   var $ = function(id){ return document.getElementById(id); };
+
+  /* ---------- diagnostics: every step is written to a small log the visitor can copy ---------- */
+  var LOG_KEY = "fc_log", LOG_MAX = 150, LOG = [];
+  try{ LOG = JSON.parse(localStorage.getItem(LOG_KEY) || "[]"); if(!Array.isArray(LOG)) LOG = []; }catch(e){ LOG = []; }
+  function log(ev, detail){
+    var line = new Date().toISOString() + " " + ev + (detail !== undefined && detail !== null && detail !== "" ? " | " + String(detail).slice(0, 300) : "");
+    LOG.push(line);
+    if(LOG.length > LOG_MAX) LOG = LOG.slice(-LOG_MAX);
+    try{ localStorage.setItem(LOG_KEY, JSON.stringify(LOG)); }catch(e){}
+    try{ console.log("[freedom-calculator] " + line); }catch(e){}
+  }
+  function maskEmail(e){ return String(e).replace(/^(.).*(@.*)$/, "$1***$2"); }
+  window.addEventListener("error", function(e){
+    log("script error", (e.message || "unknown") + " @ " + String(e.filename || "").split("/").pop() + ":" + (e.lineno || ""));
+  });
+  window.addEventListener("unhandledrejection", function(e){
+    log("unhandled rejection", e.reason && (e.reason.message || e.reason));
+  });
+
   var DEFAULTS = { target:1000, priceAff:297, priceAg:100, rate:0.4, perMonth:1, onboarding:0, churn:0, override:40 };
   var PM_MAX = 20;
   var S = Object.assign({}, DEFAULTS);
@@ -743,6 +784,7 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
     ["Tech & subscriptions", 100]
   ];
   var PLAN_NAMES = { 97:"Starter", 297:"Unlimited", 497:"Pro / SaaS" };
+  var PLAN_PRICES = [97, 297, 497];
 
   var fmt = function(n){ return "$" + Math.round(n).toLocaleString("en-US"); };
 
@@ -751,7 +793,7 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
     try{
       var raw = localStorage.getItem("ev_state");
       if(raw){ var p = JSON.parse(raw); if(p && typeof p === "object") Object.assign(S, p); }
-    }catch(e){}
+    }catch(e){ log("saved state unreadable, using defaults"); }
   }
 
   function targetValues(){
@@ -778,6 +820,20 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
     values.forEach(function(v){ var dd = Math.abs(v-n); if(dd < d){ d = dd; best = v; } });
     return best;
   }
+  var TARGETS = targetValues(), AGENCY = agencyValues();
+
+  /* Whatever is in memory or in saved state, the numbers used for the calculation are always valid. */
+  function num(v, d){ v = parseFloat(v); return isFinite(v) ? v : d; }
+  function sanitize(){
+    S.target = nearest(TARGETS, num(S.target, DEFAULTS.target));
+    S.priceAg = nearest(AGENCY, num(S.priceAg, DEFAULTS.priceAg));
+    S.priceAff = nearest(PLAN_PRICES, num(S.priceAff, DEFAULTS.priceAff));
+    S.rate = Number(S.rate) === 1 ? 1 : 0.4;
+    S.onboarding = Math.min(20000, Math.max(0, num(S.onboarding, 0)));
+    S.churn = Math.min(50, Math.max(0, Math.round(num(S.churn, 0) / 5) * 5));
+    S.override = Math.min(100, Math.max(5, Math.round(num(S.override, 40) / 5) * 5));
+    S.perMonth = Math.min(PM_MAX, Math.max(1, Math.round(num(S.perMonth, 1))));
+  }
 
   function buildCostRows(){
     var host = $("costRows");
@@ -798,7 +854,7 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
   }
   function costSum(){
     var t = 0;
-    for(var i=0;i<COST_ITEMS.length;i++){ var el = $("costamt"+i); if(el) t += (parseFloat(el.value) || 0); }
+    for(var i=0;i<COST_ITEMS.length;i++){ var el = $("costamt"+i); if(el) t += Math.max(0, num(el.value, 0)); }
     return t;
   }
   function costTotal(){ $("costTotal").textContent = fmt(costSum()) + " /mo"; }
@@ -827,7 +883,7 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
     };
   }
 
-  /* Brand micro-interaction: a figure pops once when its value changes. */
+  /* A figure pops once when its value changes (only visible where the page styles it). */
   function setNum(el, text){
     if(el.textContent === text) return;
     el.textContent = text;
@@ -835,6 +891,7 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
   }
 
   function render(){
+    sanitize();
     var r = results();
     var needed = r.accountsNeeded, months = r.monthsToFreedom;
     var aff = isAffiliate();
@@ -842,6 +899,8 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
     setNum($("accountsOut"), needed + (needed === 1 ? " ACCOUNT" : " ACCOUNTS"));
     setNum($("monthsOut"), "FREE IN " + months + (months === 1 ? " MONTH" : " MONTHS"));
     $("perMonthOut").textContent = S.perMonth;
+    $("pmDown").disabled = S.perMonth <= 1;
+    $("pmUp").disabled = S.perMonth >= PM_MAX;
 
     $("priceLabel").textContent = aff ? "GHL account price (monthly)" : "What you charge your client (monthly)";
     $("planAff").hidden = !aff;
@@ -861,6 +920,7 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
   }
 
   function syncInputs(){
+    sanitize();
     $("target").value = String(S.target);
     $("planAff").value = String(S.priceAff);
     $("planAg").value = String(S.priceAg);
@@ -876,63 +936,106 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
       : "custom rate, applied to the Affiliate option.");
   }
 
-  var TARGETS = targetValues(), AGENCY = agencyValues();
-  fillSelect($("target"), TARGETS, function(v){ return fmt(v) + " /mo"; });
-  fillSelect($("planAg"), AGENCY, function(v){ return fmt(v) + " per month"; });
-
-  Array.prototype.forEach.call(document.querySelectorAll(".toggle"), function(b){
-    b.addEventListener("click", function(){
-      var open = this.getAttribute("aria-expanded") === "true";
-      this.setAttribute("aria-expanded", open ? "false" : "true");
-      $(this.dataset.target).hidden = open;
-    });
-  });
-
-  $("target").addEventListener("change", function(){ S.target = parseFloat(this.value); render(); });
-  $("mode").addEventListener("change", function(){ S.rate = parseFloat(this.value); render(); });
-  $("planAff").addEventListener("change", function(){ S.priceAff = parseFloat(this.value); render(); });
-  $("planAg").addEventListener("change", function(){ S.priceAg = parseFloat(this.value); render(); });
-
-  function bumpPM(d){
-    S.perMonth = Math.min(PM_MAX, Math.max(1, S.perMonth + d));
-    render();
+  /* ---------- lead capture: confirmed, retried, and queued if it cannot be sent ---------- */
+  var PEND_KEY = "fc_pending", PEND_MAX = 5, PEND_DAYS = 7;
+  function readPending(){
+    try{ var a = JSON.parse(localStorage.getItem(PEND_KEY) || "[]"); return Array.isArray(a) ? a : []; }catch(e){ return []; }
   }
-  $("pmUp").addEventListener("click", function(){ bumpPM(1); });
-  $("pmDown").addEventListener("click", function(){ bumpPM(-1); });
-
-  $("onboarding").addEventListener("input", function(){ S.onboarding = Math.max(0, parseFloat(this.value) || 0); render(); });
-  $("churn").addEventListener("input", function(){ S.churn = parseFloat(this.value) || 0; syncInputs(); render(); });
-  $("rateOverride").addEventListener("input", function(){ S.override = parseFloat(this.value) || 40; syncInputs(); render(); });
-  $("useCosts").addEventListener("click", function(){
-    var t = costSum(); if(t <= 0) return;
-    S.target = nearest(TARGETS, t);
-    syncInputs(); render();
-    document.querySelector(".band").scrollIntoView({behavior:"smooth", block:"center"});
-  });
-  $("resetBtn").addEventListener("click", function(){
-    S = Object.assign({}, DEFAULTS); syncInputs(); render();
-  });
-
-  /* ---------- lead capture ---------- */
-  function sendLead(payload){
-    if(!WEBHOOK_URL) return;
+  function writePending(a){ try{ localStorage.setItem(PEND_KEY, JSON.stringify(a.slice(-PEND_MAX))); }catch(e){} }
+  function withTimeout(p, ms){
+    return new Promise(function(res, rej){
+      var t = setTimeout(function(){ rej(new Error("timeout after " + ms + " ms")); }, ms);
+      p.then(function(v){ clearTimeout(t); res(v); }, function(e){ clearTimeout(t); rej(e); });
+    });
+  }
+  /* Resolves "sent" (the server answered OK), "sent-unconfirmed" (posted, the browser may not read the answer) or "failed". */
+  function postLead(payload){
+    if(typeof fetch !== "function") return Promise.resolve("failed");
+    var first;
     try{
-      fetch(WEBHOOK_URL, {
+      first = withTimeout(fetch(WEBHOOK_URL, {
         method:"POST", headers:{"Content-Type":"application/json"},
         body:JSON.stringify(payload), keepalive:true
-      }).catch(function(){
-        /* If the browser blocks the JSON request (CORS), resend as a plain form post. */
-        var flat = new URLSearchParams();
-        flat.append("name", payload.name);
-        flat.append("email", payload.email);
-        flat.append("source", payload.source);
-        Object.keys(payload.results).forEach(function(k){ flat.append(k, String(payload.results[k])); });
-        return fetch(WEBHOOK_URL, { method:"POST", mode:"no-cors", body:flat, keepalive:true });
-      }).catch(function(){});
-    }catch(e){}
+      }), 8000).then(function(res){
+        if(res.ok) return "sent";
+        throw new Error("http " + res.status);
+      });
+    }catch(e){ first = Promise.reject(e); }
+    return first.catch(function(e1){
+      log("lead: json post did not confirm", e1 && e1.message);
+      /* If the browser blocks the JSON request (CORS), resend as a plain form post. */
+      var flat = new URLSearchParams();
+      ["name", "email", "source", "submissionId", "submittedAt", "page"].forEach(function(k){ flat.append(k, String(payload[k])); });
+      Object.keys(payload.results).forEach(function(k){ flat.append(k, String(payload.results[k])); });
+      return withTimeout(fetch(WEBHOOK_URL, { method:"POST", mode:"no-cors", body:flat, keepalive:true }), 8000)
+        .then(function(){ return "sent-unconfirmed"; });
+    }).catch(function(e2){
+      log("lead: form post failed", e2 && e2.message);
+      return "failed";
+    });
+  }
+  function sendLead(payload){
+    if(!WEBHOOK_URL){ log("lead: skipped, no webhook set"); return Promise.resolve("skipped"); }
+    return postLead(payload).then(function(st){
+      log("lead: " + st, payload.submissionId);
+      if(st === "failed"){ var q = readPending(); q.push(payload); writePending(q); log("lead: queued for retry", payload.submissionId); }
+      return st;
+    });
+  }
+  var flushing = false;
+  function flushPending(){
+    if(!WEBHOOK_URL || flushing) return;
+    var cutoff = Date.now() - PEND_DAYS * 864e5;
+    var q = readPending().filter(function(p){ return p && p.submittedAt && Date.parse(p.submittedAt) > cutoff; });
+    writePending([]);
+    if(!q.length) return;
+    flushing = true;
+    q.reduce(function(chain, p){
+      return chain.then(function(){
+        return postLead(p).then(function(st){
+          log("lead retry: " + st, p.submissionId);
+          if(st === "failed"){ var k = readPending(); k.push(p); writePending(k); }
+        });
+      });
+    }, Promise.resolve()).then(function(){ flushing = false; }, function(){ flushing = false; });
   }
 
-  /* ---------- PDF (brand styling) ---------- */
+  /* ---------- PDF tool: loaded on demand, from three places in turn ---------- */
+  var LIB_SOURCES = [
+    "vendor/jspdf.umd.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+    "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"
+  ];
+  var libPromise = null;
+  function libReady(){ return !!(window.jspdf && window.jspdf.jsPDF); }
+  function loadScript(src){
+    return new Promise(function(res){
+      var s = document.createElement("script"), done = false;
+      function fin(ok){
+        if(done) return; done = true; clearTimeout(t);
+        ok = ok && libReady();
+        log("pdf tool: " + (ok ? "loaded" : "not loaded"), src);
+        res(ok);
+      }
+      var t = setTimeout(function(){ fin(false); }, 10000);
+      s.src = src; s.async = true;
+      s.onload = function(){ fin(true); };
+      s.onerror = function(){ fin(false); };
+      document.head.appendChild(s);
+    });
+  }
+  function ensureLib(){
+    if(libReady()) return Promise.resolve(true);
+    if(libPromise) return libPromise;
+    libPromise = LIB_SOURCES.reduce(function(p, src){
+      return p.then(function(ok){ return ok || loadScript(src); });
+    }, Promise.resolve(false)).then(function(ok){
+      if(!ok) libPromise = null;   /* the next press tries again from the start */
+      return ok;
+    });
+    return libPromise;
+  }
+
   /* Colours come from the brand tokens on :root, so the PDF follows the same palette as the page. */
   function tok(name){
     var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim().replace("#", "");
@@ -1104,79 +1207,224 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
   }
 
   /* Inside the claude.ai viewer a page cannot start a download itself, so it asks the viewer to save the file. */
-  var viewerDownloads = (window.claude && typeof window.claude.use === "function")
+  var inViewer = !!(window.claude && typeof window.claude.use === "function");
+  var viewerDownloads = inViewer
     ? window.claude.use("downloads").catch(function(){ return null; })
     : Promise.resolve(null);
 
   var FILE_NAME = "freedom-plan.pdf";
-  function setMsg(text, isErr){
+  var MSG_READY = "Done. The PDF went to your downloads. You can close this page now.";
+  var MSG_NO_TOOL = "The PDF could not be built because the PDF tool did not load. Check your internet connection, then press Try again. Your numbers stay on this page.";
+  var MSG_NO_BUILD = "The PDF could not be built on this device. Press Try again. If it keeps happening, use Show details at the bottom of the page and send the report.";
+
+  function setMsg(text, kind){
     var msg = $("thanksMsg");
     msg.textContent = text;
-    msg.className = "notice " + (isErr ? "err" : "ok");
+    msg.setAttribute("data-kind", kind);
   }
-  function deliverPdf(name){
-    if(!window.jspdf || !window.jspdf.jsPDF){
-      setMsg("The PDF tool did not load. Check your connection, reload the page and try again.", true);
-      return;
-    }
-    setMsg("Preparing your PDF.");
-    loadFonts().then(function(fonts){
-      var doc;
-      try{ doc = buildPdf(name, results(), fonts); }
-      catch(e){
-        try{ doc = buildPdf(name, results(), null); }
-        catch(e2){ setMsg("The PDF could not be created. Reload the page and try again.", true); return; }
-      }
-      if(!(window.claude && typeof window.claude.use === "function")){
-        doc.save(FILE_NAME); setMsg("Check your downloads for the PDF."); return;
-      }
-      return viewerDownloads.then(function(dl){
-        if(!dl){ doc.save(FILE_NAME); setMsg("Check your downloads for the PDF."); return; }
-        return dl.save({ filename:FILE_NAME, data:doc.output("blob") }).then(function(){
-          setMsg("Check your downloads for the PDF.");
-        }, function(err){
-          if(err && err.code === "declined") setMsg("Download cancelled. Use the button below to get the PDF.");
-          else setMsg("The download is not available in this view. Open the page in a browser and try again.", true);
+  /* Names the embedded PDF fonts cannot draw fall back to the built-in font, where the name is drawn as an image. */
+  var OUTSIDE_FONT = /[^ -ԯḀ-ỿ‐-‧]/;
+  function pdfName(name){ return name.length > 32 ? name.slice(0, 31) + "..." : name; }
+
+  var lastBlobUrl = null;
+  /* Resolves { ok:true } or { ok:false, msg }. It never rejects. */
+  function makePdf(name){
+    return ensureLib().then(function(ok){
+      if(!ok){ log("pdf: tool unavailable from every source"); return { ok:false, msg:MSG_NO_TOOL }; }
+      return loadFonts().then(function(fonts){
+        var n = pdfName(name), r = results(), doc = null;
+        if(fonts && OUTSIDE_FONT.test(n)) fonts = null;
+        log("pdf: fonts", fonts ? "embedded" : "built-in");
+        try{ doc = buildPdf(n, r, fonts); }
+        catch(e){
+          log("pdf: build failed, retrying in plain mode", e && e.message);
+          try{ doc = buildPdf(n.replace(/[^\x20-\x7E]/g, "").trim() || "you", r, null); }
+          catch(e2){ log("pdf: build failed twice", e2 && e2.message); return { ok:false, msg:MSG_NO_BUILD }; }
+        }
+        var blob = null;
+        try{
+          blob = doc.output("blob");
+          if(lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+          lastBlobUrl = URL.createObjectURL(blob);
+          $("openPdf").href = lastBlobUrl;
+        }catch(e){ log("pdf: open link not available", e && e.message); }
+        log("pdf: built", blob ? blob.size + " bytes" : "");
+
+        if(!inViewer){
+          try{ doc.save(FILE_NAME); log("pdf: download started"); }
+          catch(e){ log("pdf: download call failed", e && e.message); if(!lastBlobUrl) return { ok:false, msg:MSG_NO_BUILD }; }
+          return { ok:true };
+        }
+        return viewerDownloads.then(function(dl){
+          if(!dl){ doc.save(FILE_NAME); log("pdf: download started (viewer without save support)"); return { ok:true }; }
+          return dl.save({ filename:FILE_NAME, data:blob || doc.output("blob") }).then(function(){
+            log("pdf: saved through the viewer"); return { ok:true };
+          }, function(err){
+            log("pdf: viewer save refused", err && err.code);
+            return { ok:false, msg:(err && err.code === "declined")
+              ? "Download cancelled. Press Try again to get the PDF."
+              : "The download is not available in this view. Open the page in a browser and press Try again." };
+          });
         });
       });
+    }).catch(function(e){
+      log("pdf: unexpected failure", e && e.message);
+      return { ok:false, msg:MSG_NO_BUILD };
     });
   }
 
-  var leadName = "";
-  $("programLink").href = PROGRAM_URL;
-  $("planForm").addEventListener("focusin", loadFonts, { once:true });
-  $("planForm").addEventListener("submit", function(ev){
-    ev.preventDefault();
-    var name = $("leadName").value.trim(), email = $("leadEmail").value.trim();
-    var err = $("formErr"), problem = "";
-    if(!name) problem = "Enter your first name.";
-    else if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) problem = "Enter a valid email address, like name@example.com.";
-    if(problem){
-      err.textContent = problem; err.hidden = false;
-      (name ? $("leadEmail") : $("leadName")).focus();
-      return;
-    }
-    err.hidden = true;
-    leadName = name;
-    sendLead({ name:name, email:email, source:"freedom-calculator", results:results() });
-    $("planGate").hidden = true;
-    $("planThanks").hidden = false;
-    $("thanksTitle").textContent = "Your Freedom Plan is ready, " + name;
-    $("thanksTitle").focus();
-    deliverPdf(name);
-  });
-  $("planAgain").addEventListener("click", function(){ deliverPdf(leadName); });
+  var busy = false, leadName = "";
+  function run(name, leadPromise){
+    if(busy) return;
+    busy = true;
+    $("planAgain").disabled = true;
+    $("openRow").hidden = true;
+    $("thanksTitle").textContent = "Building your Freedom Plan, " + name;
+    setMsg("Working: building your PDF. Keep this page open, it takes a few seconds.", "work");
+    var slow = setTimeout(function(){
+      log("still working after 7 s");
+      setMsg("Still working. A slow connection takes a little longer. Keep this page open.", "work");
+    }, 7000);
+    Promise.all([makePdf(name), leadPromise || Promise.resolve("none")]).then(function(a){
+      clearTimeout(slow);
+      busy = false;
+      $("planAgain").disabled = false;
+      if(a[0].ok){
+        $("thanksTitle").textContent = "Your Freedom Plan is ready, " + name;
+        setMsg(MSG_READY, "ok");
+        $("openRow").hidden = !lastBlobUrl;
+        $("planAgain").textContent = "Download the PDF again";
+      } else {
+        $("thanksTitle").textContent = "Almost there, " + name;
+        setMsg(a[0].msg, "warn");
+        $("planAgain").textContent = "Try again";
+      }
+      log("finished", "pdf " + (a[0].ok ? "ok" : "not delivered") + ", lead " + a[1]);
+    });
+  }
 
-  load();
-  S.target = nearest(TARGETS, S.target);
-  S.priceAg = nearest(AGENCY, S.priceAg);
-  S.priceAff = nearest([97,297,497], S.priceAff);
-  S.rate = S.rate === 1 ? 1 : 0.4;
-  S.onboarding = Math.max(0, parseFloat(S.onboarding) || 0);
-  S.perMonth = Math.min(PM_MAX, Math.max(1, S.perMonth || 1));
-  buildCostRows();
-  syncInputs();
-  render();
+  /* ---------- the report behind "Show details" ---------- */
+  function report(){
+    var lines = [
+      "Freedom Calculator report, version " + VERSION,
+      "Time: " + new Date().toISOString(),
+      "Page: " + location.origin + location.pathname,
+      "Browser: " + navigator.userAgent,
+      "Online: " + (navigator.onLine === false ? "no" : "yes"),
+      "PDF tool loaded: " + (libReady() ? "yes" : "no"),
+      "Webhook set: " + (WEBHOOK_URL ? "yes" : "no"),
+      "Leads waiting to be sent: " + readPending().length,
+      "Settings: " + JSON.stringify(S),
+      "",
+      "Log (oldest first):"
+    ];
+    return lines.concat(LOG).join("\n");
+  }
+  function wireDiagnostics(){
+    $("diagToggle").addEventListener("click", function(){
+      var open = this.getAttribute("aria-expanded") === "true";
+      this.setAttribute("aria-expanded", open ? "false" : "true");
+      $("diagPanel").hidden = open;
+      if(!open) $("diagText").value = report();
+    });
+    $("diagCopy").addEventListener("click", function(){
+      var btn = this, box = $("diagText");
+      box.value = report();
+      function done(){ btn.textContent = "Copied"; setTimeout(function(){ btn.textContent = "Copy report"; }, 1600); }
+      function manual(){ box.focus(); box.select(); btn.textContent = "Selected, now press Ctrl+C"; setTimeout(function(){ btn.textContent = "Copy report"; }, 4000); }
+      try{
+        if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(box.value).then(done, manual);
+        else manual();
+      }catch(e){ manual(); }
+    });
+  }
+
+  function start(){
+    fillSelect($("target"), TARGETS, function(v){ return fmt(v) + " /mo"; });
+    fillSelect($("planAg"), AGENCY, function(v){ return fmt(v) + " per month"; });
+
+    Array.prototype.forEach.call(document.querySelectorAll(".toggle"), function(b){
+      b.addEventListener("click", function(){
+        var open = this.getAttribute("aria-expanded") === "true";
+        this.setAttribute("aria-expanded", open ? "false" : "true");
+        $(this.dataset.target).hidden = open;
+      });
+    });
+
+    $("target").addEventListener("change", function(){ S.target = parseFloat(this.value); render(); });
+    $("mode").addEventListener("change", function(){ S.rate = parseFloat(this.value); render(); });
+    $("planAff").addEventListener("change", function(){ S.priceAff = parseFloat(this.value); render(); });
+    $("planAg").addEventListener("change", function(){ S.priceAg = parseFloat(this.value); render(); });
+
+    function bumpPM(d){ S.perMonth = S.perMonth + d; render(); }
+    $("pmUp").addEventListener("click", function(){ bumpPM(1); });
+    $("pmDown").addEventListener("click", function(){ bumpPM(-1); });
+
+    $("onboarding").addEventListener("input", function(){ S.onboarding = this.value; render(); });
+    $("onboarding").addEventListener("change", function(){ this.value = S.onboarding; });
+    $("churn").addEventListener("input", function(){ S.churn = this.value; syncInputs(); render(); });
+    $("rateOverride").addEventListener("input", function(){ S.override = this.value; syncInputs(); render(); });
+    $("useCosts").addEventListener("click", function(){
+      var t = costSum(), note = $("costMsg");
+      note.hidden = false;
+      if(t <= 0){ note.textContent = "Enter at least one cost above zero first."; return; }
+      S.target = nearest(TARGETS, t);
+      syncInputs(); render();
+      note.textContent = "Goal set to " + fmt(S.target) + " per month, the closest option to your total of " + fmt(t) + ".";
+      document.querySelector(".band").scrollIntoView({behavior:"smooth", block:"center"});
+    });
+    $("resetBtn").addEventListener("click", function(){
+      S = Object.assign({}, DEFAULTS); syncInputs(); render();
+    });
+
+    $("programLink").href = PROGRAM_URL;
+    $("planForm").addEventListener("focusin", function(){ ensureLib(); loadFonts(); }, { once:true });
+    $("planForm").addEventListener("submit", function(ev){
+      ev.preventDefault();
+      if(busy) return;
+      var name = $("leadName").value.trim(), email = $("leadEmail").value.trim();
+      var err = $("formErr"), problem = "";
+      if(!name) problem = "Enter your first name.";
+      else if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) problem = "Enter a valid email address, like name@example.com.";
+      if(problem){
+        err.textContent = problem; err.hidden = false;
+        (name ? $("leadEmail") : $("leadName")).focus();
+        return;
+      }
+      err.hidden = true;
+      leadName = name;
+      var payload = {
+        name:name, email:email, source:"freedom-calculator", results:results(),
+        submissionId: Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8),
+        submittedAt: new Date().toISOString(),
+        page: location.origin + location.pathname
+      };
+      log("submit", maskEmail(email) + " " + payload.submissionId);
+      var lead = sendLead(payload);
+      $("planGate").hidden = true;
+      $("planThanks").hidden = false;
+      $("thanksTitle").focus();
+      run(name, lead);
+    });
+    $("planAgain").addEventListener("click", function(){ log("again pressed"); run(leadName, null); });
+
+    load();
+    buildCostRows();
+    syncInputs();
+    render();
+
+    flushPending();
+    window.addEventListener("online", function(){ log("back online"); flushPending(); });
+    log("ready", "version " + VERSION);
+  }
+
+  try{ wireDiagnostics(); }catch(e){ log("details panel could not start", e && e.message); }
+  try{ start(); }
+  catch(e){
+    log("start failed", e && e.message);
+    var f = $("fatal");
+    if(f){ f.hidden = false; }
+  }
 })();
 </script>
 </body>
