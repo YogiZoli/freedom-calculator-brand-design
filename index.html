@@ -461,9 +461,18 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
 
   /* headings: text colour with a teal accent underline */
   h1,.htitle,.plan h2{color:var(--ink);text-decoration:underline;text-decoration-color:var(--teal);text-decoration-thickness:3px}
+  h1,.htitle,.plan h2{text-decoration-skip-ink:none}
   h1,.plan h2{text-underline-offset:6px}
   .htitle{text-underline-offset:2px;padding-bottom:3px;margin-bottom:-3px}
   summary{color:var(--ink)}
+  hr,input[type=range]{color:var(--ink)}
+
+  /* the 4px left bar replaces a thinner border, so the padding gives that width back and the content stays where it was */
+  .band,.plan{padding-left:calc(var(--space-5) - 3px)}
+  @media (min-width:768px){
+    .band{padding-left:calc(var(--space-6) - 3px)}
+    .plan{padding-left:calc(var(--space-7) - 3px)}
+  }
 
   /* step numbers: strong teal with white text */
   .steptag{color:var(--muted-text)}
@@ -684,7 +693,7 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
 /* ============================================ */
 
 (function(){
-  var VERSION = "1.5.0";
+  var VERSION = "1.5.1";
   var $ = function(id){ return document.getElementById(id); };
 
   /* ---------- logging: every step, input, warning and error is written to a log the visitor can copy ----------
