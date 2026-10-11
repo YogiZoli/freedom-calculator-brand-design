@@ -571,6 +571,47 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   .diagbtn{appearance:none;background:none;border:0;padding:var(--space-3);font:inherit;font-size:var(--text-xs);color:var(--muted-foreground);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
   .diagpanel{display:flex;flex-direction:column;gap:var(--space-3);align-items:flex-start}
   .diagpanel textarea{width:100%;font-family:var(--font-mono);font-size:var(--text-xs);line-height:1.5;border:var(--border-width) solid var(--input);border-radius:var(--radius-md);padding:var(--space-4);background:var(--surface);color:var(--foreground);resize:vertical}
+  /* ---------- colour: every block carries one brand colour, in a fixed order:
+     fuchsia, blue-green, coral, freesia, then fuchsia again. Coral and freesia are used as faint washes only. ---------- */
+  .c-fuchsia{--tint:var(--primary-50);--edge:var(--primary-200)}
+  .c-live{--tint:var(--live-50);--edge:var(--live-200)}
+  .c-coral{--tint:color-mix(in srgb,var(--coral) 14%,var(--surface));--edge:color-mix(in srgb,var(--coral) 60%,var(--surface))}
+  .c-freesia{--tint:color-mix(in srgb,var(--freesia) 20%,var(--surface));--edge:color-mix(in srgb,var(--freesia) 80%,var(--surface))}
+  .band,details{
+    position:relative;background:var(--tint,var(--surface));border:1.5px solid var(--edge,var(--border));
+    transition:border-color var(--duration-slow) var(--ease-standard),box-shadow var(--duration-slow) var(--ease-standard);
+  }
+  details{overflow:visible}
+  .body,.costtotal,.band hr.rule{border-top-color:var(--edge,var(--border))}
+  .toggle,.counter button{border-color:var(--edge,var(--border-strong))}
+  .counter .val{background:var(--surface);border:var(--border-width) solid var(--edge,var(--border))}
+
+  /* headings and step numbers: the strongest accent */
+  h1,.htitle,summary,.plan h2{color:var(--primary-hover)}
+  .steptag{color:var(--neutral-700)}
+  .steptag .n{background:var(--primary)}
+  .steptag .n b{color:var(--primary-foreground)}
+  #accountsOut{color:var(--primary-hover)}
+
+  /* secondary text one step darker, so it stays AA on every tint */
+  .sub,.outrow .lead,.extras,.note,.hint,.desc,.counter .cap,.flabel,summary .chev{color:var(--neutral-600)}
+
+  /* the result is the hero: solid fuchsia, white figures */
+  .hero-out{background:var(--primary);border-radius:var(--radius-lg);padding:var(--space-5) var(--space-4);box-shadow:var(--shadow-cta)}
+  .hero-out .lead,.hero-out .num{color:var(--primary-foreground)}
+  .plan{position:relative;border-width:2px}
+  .plan.ready{background:var(--hero-glow),var(--primary-surface);box-shadow:var(--shadow-lg),var(--shadow-cta)}
+
+  /* just updated: two soft halo pulses, then an accent border and a small label */
+  .updated-tag{
+    display:none;position:absolute;top:-11px;right:var(--space-5);
+    background:var(--primary);color:var(--primary-foreground);
+    font-family:var(--font-mono);font-size:0.75rem;font-weight:var(--weight-bold);letter-spacing:.08em;text-transform:uppercase;line-height:1;
+    padding:5px var(--space-3);border-radius:var(--radius-sm);
+  }
+  .is-updated{border-color:var(--primary)}
+  .is-updated > .updated-tag{display:inline-block}
+  .just-updated{animation:cta-halo 1.2s var(--ease-out) 2}
 </style>
 </head>
 <body>
@@ -586,7 +627,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   </header>
 
   <!-- STEP 1 -->
-  <section class="band">
+  <section class="band c-fuchsia" id="band1">
     <div class="bandhead">
       <span class="steptag"><span class="n"><b>1</b></span> How much</span>
       <h2 class="htitle">Freedom Number</h2>
@@ -605,7 +646,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   </section>
 
   <!-- COST BUILDER -->
-  <details id="costs">
+  <details id="costs" class="c-live">
     <summary>Build the number from your costs <span class="chev">+</span></summary>
     <div class="body">
       <p class="hint" style="margin-bottom:var(--space-4)">Everyone's fixed costs differ, so nothing here is assumed. Change the lines, then set it as your goal.</p>
@@ -619,7 +660,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   </details>
 
   <!-- STEP 2 -->
-  <section class="band">
+  <section class="band c-coral" id="band2">
     <div class="bandhead">
       <span class="steptag"><span class="n"><b>2</b></span> How</span>
       <h2 class="htitle"><span class="wide">Affiliate (40%) or Agency (100%)</span><span class="narrow">Affiliate or Agency</span></h2>
@@ -650,7 +691,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   </section>
 
   <!-- STEP 3 -->
-  <section class="band">
+  <section class="band c-freesia" id="band3">
     <div class="bandhead">
       <span class="steptag"><span class="n"><b>3</b></span> How long</span>
       <h2 class="htitle">Your plan</h2>
@@ -667,7 +708,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
     </div>
     <hr class="rule">
     <div class="bandout">
-      <div class="outrow">
+      <div class="outrow hero-out">
         <span class="lead">Then you are</span>
         <span class="num" id="monthsOut">FREE IN 9 MONTHS</span>
       </div>
@@ -675,7 +716,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   </section>
 
   <!-- ADVANCED -->
-  <details id="adv">
+  <details id="adv" class="c-fuchsia">
     <summary>Advanced Settings <span class="chev">+</span></summary>
     <div class="body adv-body">
       <div class="field">
@@ -741,7 +782,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   <div id="diagPanel" class="diagpanel" hidden>
     <p class="hint">This report shows each step the page took, so the cause can be found. It holds no passwords. Copy it and send it to support.</p>
     <textarea id="diagText" readonly rows="10" aria-label="Technical report"></textarea>
-    <button class="btn btn-ghost" type="button" id="diagCopy">Copy report</button>
+    <button class="btn btn-primary" type="button" id="diagCopy">Copy report</button>
   </div>
 </div>
 
@@ -752,7 +793,7 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
 /* ============================================ */
 
 (function(){
-  var VERSION = "1.2.1";
+  var VERSION = "1.3.0";
   var $ = function(id){ return document.getElementById(id); };
 
   /* ---------- logging: every step, input, warning and error is written to a log the visitor can copy ----------
@@ -946,9 +987,29 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
 
   /* A figure pops once when its value changes (only visible where the page styles it). */
   function setNum(el, text){
-    if(el.textContent === text) return;
+    if(el.textContent === text) return false;
     el.textContent = text;
     el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+    return true;
+  }
+
+  /* A block that has just changed pulses twice, then keeps an accent border and an "Updated" label
+     until something else changes. Nothing is marked while the page is still starting. */
+  var booted = false, updatedNow = [], alsoUpdated = [];
+  function markUpdated(els){
+    if(!booted || !els.length) return;
+    updatedNow.forEach(function(el){ if(els.indexOf(el) < 0) el.classList.remove("is-updated", "just-updated"); });
+    els.forEach(function(el){
+      if(!el.querySelector(":scope > .updated-tag")){
+        var tag = document.createElement("span");
+        tag.className = "updated-tag"; tag.textContent = "Updated";
+        el.appendChild(tag);
+      }
+      el.classList.remove("just-updated"); void el.offsetWidth;
+      el.classList.add("just-updated", "is-updated");
+    });
+    updatedNow = els.slice();
+    log("marked as updated", els.map(function(el){ return el.id; }).join(", "));
   }
 
   var lastShown = "";
@@ -960,8 +1021,10 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
 
     var shown = needed + " accounts, " + months + " months";
     if(shown !== lastShown){ lastShown = shown; log("result shown", shown + " | " + JSON.stringify(r)); }
-    setNum($("accountsOut"), needed + (needed === 1 ? " ACCOUNT" : " ACCOUNTS"));
-    setNum($("monthsOut"), "FREE IN " + months + (months === 1 ? " MONTH" : " MONTHS"));
+    var changed = alsoUpdated; alsoUpdated = [];
+    if(setNum($("accountsOut"), needed + (needed === 1 ? " ACCOUNT" : " ACCOUNTS"))) changed.push($("band2"));
+    if(setNum($("monthsOut"), "FREE IN " + months + (months === 1 ? " MONTH" : " MONTHS"))) changed.push($("band3"));
+    markUpdated(changed);
     $("perMonthOut").textContent = S.perMonth;
     $("pmDown").disabled = S.perMonth <= 1;
     $("pmUp").disabled = S.perMonth >= PM_MAX;
@@ -1177,8 +1240,10 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
     var C = {
       ink:tok("--ink"), label:tok("--label"), muted:tok("--muted-text"), border:tok("--border-c"),
       primary:tok("--primary-600"), money:tok("--primary-700"), tint:tok("--primary-50"), tintText:tok("--primary-800"),
-      live:tok("--live-500"), link:tok("--live-700"), white:tok("--white")
+      live:tok("--live-500"), link:tok("--live-700"), white:tok("--white"),
+      edge:tok("--primary-200"), liveTint:tok("--live-50"), liveEdge:tok("--live-200"), coral:tok("--coral")
     };
+    function mix(a, b, p){ return a.map(function(v, i){ return Math.round(v * p + b[i] * (1 - p)); }); }
     var W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), M = 48, CW = W - M*2;
     var aff = r.model === "affiliate";
     function color(c){ doc.setTextColor(c[0], c[1], c[2]); }
@@ -1200,7 +1265,7 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
     fill(C.live); doc.circle(M + 3, 51.5, 3, "F");
     color(C.link); font(W_BOLD, 9);
     doc.text("FREEDOM CALCULATOR", M + 12, 55, { charSpace:1.1 });
-    color(C.ink); font(W_BLACK, 30);
+    color(C.money); font(W_BLACK, 30);
     doc.text("Your Freedom Plan", M, 90);
     font(W_REG, 11); color(C.label);
     var pre = "Prepared for ";
@@ -1221,30 +1286,34 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
 
     /* the three steps: white cards with a border */
     var y = 144;
-    function step(n, tag, big, small, bigColor){
-      fill(C.white); doc.setDrawColor(C.border[0], C.border[1], C.border[2]); doc.setLineWidth(1);
+    function step(n, tag, big, small, st){
+      fill(st.bg); doc.setDrawColor(st.edge[0], st.edge[1], st.edge[2]); doc.setLineWidth(1.2);
       doc.roundedRect(M, y, CW, 76, 9, 9, "FD");
-      fill(C.tint); doc.circle(M + 26, y + 24, 9, "F");
-      color(C.tintText); font(W_BOLD, 10);
+      fill(st.dot); doc.circle(M + 26, y + 24, 9, "F");
+      color(st.dotText); font(W_BOLD, 10);
       doc.text(String(n), M + 26, y + 27.5, { align:"center" });
-      color(C.label); font(W_BOLD, 8.5);
+      color(st.tag); font(W_BOLD, 8.5);
       doc.text(tag, M + 42, y + 27, { charSpace:0.9 });
-      color(bigColor || C.ink); font(W_BLACK, 22);
+      color(st.big); font(W_BLACK, 22);
       doc.text(big, W - M - 18, y + 33, { align:"right" });
-      color(C.muted); font(W_REG, 10.5);
+      color(st.small); font(W_REG, 10.5);
       doc.text(small, M + 17, y + 58);
       y += 86;
     }
-    step(1, "HOW MUCH", fmt(r.freedomNumber) + " per month", "Your Freedom Number: the monthly income that sets you free.", C.money);
+    /* fuchsia tint, blue-green tint, then the result as the solid fuchsia hero */
+    var ST1 = { bg:C.tint, edge:C.edge, dot:C.primary, dotText:C.white, tag:C.label, big:C.money, small:C.label };
+    var ST2 = { bg:C.liveTint, edge:C.liveEdge, dot:C.primary, dotText:C.white, tag:C.label, big:C.ink, small:C.label };
+    var ST3 = { bg:C.primary, edge:C.primary, dot:C.white, dotText:C.primary, tag:C.white, big:C.white, small:C.white };
+    step(1, "HOW MUCH", fmt(r.freedomNumber) + " per month", "Your Freedom Number: the monthly income that sets you free.", ST1);
     step(2, "HOW", r.accountsNeeded + (r.accountsNeeded === 1 ? " ACCOUNT" : " ACCOUNTS"),
       aff ? "Affiliate: " + r.commissionPercent + "% of the " + fmt(r.accountPrice) + " plan, about " + fmt(r.incomePerAccount) + " per account each month."
-          : "Agency: you bill " + fmt(r.accountPrice) + " per client each month and keep 100%.");
+          : "Agency: you bill " + fmt(r.accountPrice) + " per client each month and keep 100%.", ST2);
     step(3, "HOW LONG", "FREE IN " + r.monthsToFreedom + (r.monthsToFreedom === 1 ? " MONTH" : " MONTHS"),
-      "Signing " + r.newAccountsPerMonth + (r.newAccountsPerMonth === 1 ? " new account" : " new accounts") + " per month.");
+      "Signing " + r.newAccountsPerMonth + (r.newAccountsPerMonth === 1 ? " new account" : " new accounts") + " per month.", ST3);
 
     /* inputs table */
     y += 16;
-    color(C.ink); font(W_BOLD, 13);
+    color(C.money); font(W_BOLD, 13);
     doc.text("Your numbers", M, y);
     y += 10;
     var rows = [
@@ -1273,7 +1342,9 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
 
     /* CTA: a fuchsia button in a light panel */
     var cy = H - 172;
-    fill(C.tint); doc.roundedRect(M, cy, CW, 92, 12, 12, "F");
+    var coralEdge = mix(C.coral, C.white, 0.6);
+    fill(mix(C.coral, C.white, 0.14)); doc.setDrawColor(coralEdge[0], coralEdge[1], coralEdge[2]); doc.setLineWidth(1.2);
+    doc.roundedRect(M, cy, CW, 92, 12, 12, "FD");
     color(C.ink); font(W_BOLD, 12.5);
     doc.text("Next step: build this plan with a group in my 6-pillar cohort program.", M + 18, cy + 30);
     var label = "See the program";
@@ -1383,11 +1454,14 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
       if(a[0].ok){
         $("thanksTitle").textContent = "Your Freedom Plan is ready, " + name;
         setMsg(MSG_READY, "ok");
+        $("plan").classList.add("ready");
+        markUpdated([$("plan")]);
         $("openRow").hidden = !lastBlobUrl;
         $("planAgain").textContent = "Download the PDF again";
       } else {
         $("thanksTitle").textContent = "Almost there, " + name;
         setMsg(a[0].msg, "warn");
+        $("plan").classList.remove("ready", "is-updated", "just-updated");
         $("planAgain").textContent = "Try again";
       }
       (a[0].ok ? log : fail)("finished in " + (Date.now() - runStart) + " ms", "pdf " + (a[0].ok ? "ok" : "not delivered") + ", lead " + a[1] + ", shown to visitor: " + $("thanksMsg").textContent);
@@ -1465,7 +1539,9 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
       note.hidden = false;
       if(t <= 0){ note.textContent = "Enter at least one cost above zero first."; return; }
       S.target = nearest(TARGETS, t);
+      alsoUpdated = [$("band1")];
       syncInputs(); render();
+      if(alsoUpdated.length){ markUpdated(alsoUpdated); alsoUpdated = []; }
       note.textContent = "Goal set to " + fmt(S.target) + " per month, the closest option to your total of " + fmt(t) + ".";
       document.querySelector(".band").scrollIntoView({behavior:"smooth", block:"center"});
     });
@@ -1529,6 +1605,7 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
 
     flushPending();
     window.addEventListener("online", function(){ log("connection is back"); flushPending(); });
+    booted = true;
     log("ready", "settings " + JSON.stringify(S) + ", leads waiting " + readPending().length);
   }
 
