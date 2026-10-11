@@ -8,163 +8,70 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Geist+Mono:wght@500;700&display=swap">
 <style>
-/* ===== Brand tokens: design-system/tokens.css (v3 "Shine"), copied verbatim ===== */
-/* ============================================================================
-   Zoltan Gero brand system  tokens.css  (v3 "Shine", 2026-09-26)
-   Single source of truth for color, type, spacing, radius, shadow, motion.
-
-   How to use:
-   1. Load Open Sans (plus Geist Mono for eyebrows, ids, code):
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap">
-   2. Link this file on every page / template.
-   3. Style everything through var(--...). Never hard-code a hex in a component.
-
-   SHINE (2026-09-26), replaces the green/azure canon (archived in tokens.v1.css):
-   - Primary action = fuchsia #D91E50, white text (~5:1), pulsing halo + sheen.
-   - Secondary filled button = ink #0E1330, white text.
-   - Live accent = blue-green #00B1B0: dots, progress, hairlines. Never text.
-     Links use #00807F.
-   - Coral #FF8370 and Freesia #FEC84D: faint background glow only.
-   - Danger is warm orange-red so it never reads as the fuchsia CTA.
-   - Light theme only. Open Sans, base 18px.
-
-   Compatibility: every previous token name still exists. The old scale names
-   are aliases onto the Shine palette:
-     --brand-*   (was azure)      -> live blue-green scale, 900/950 -> ink
-     --accent-*  (was green)      -> primary fuchsia scale
-     --neutral-* (was blue-grey)  -> Shine cool neutrals
-   Reference design: shine/VidRev App v3.dc.html
-   ========================================================================== */
-
+/* ===== Colour palette: these are the only colours on the page. Nothing else is mixed, tinted or added. ===== */
 :root {
-  /* --- Primary scale: fuchsia (the action color: CTA fill, money figures) --- */
-  --primary-50:  #FFE9EF;
-  --primary-100: #FFD0DD;
-  --primary-200: #F9A3B8;
-  --primary-300: #F2708F;
-  --primary-400: #EB4A74;
-  --primary-500: #E42256;   /* brand fuchsia, accents only (4.5:1 borderline) */
-  --primary-600: #D91E50;   /* CTA fill, white text ~5:1 */
-  --primary-700: #B3163F;   /* CTA hover, money text */
-  --primary-800: #A3143A;   /* text on primary-50 */
-  --primary-900: #7F0F2D;
+  /* text and surfaces */
+  --ink: #0F172A;
+  --muted-text: #475569;
+  --ground: #F5F7FA;
+  --white: #FFFFFF;
+  --border-c: #E2E8F0;
+  /* accents, rotated across content blocks in this order: teal, navy, emerald */
+  --teal: #0E7490;     --teal-tint: #E6F4F7;
+  --navy: #1E3A8A;     --navy-tint: #E8EDFB;
+  --emerald: #047857;  --emerald-tint: #E7F6F0;
+  /* attention: updated highlight, warnings and errors (never red) */
+  --amber: #B45309;    --amber-tint: #FEF3E2;    --amber-dark: #92400E;
 
-  /* --- Live scale: blue-green (motion only: dots, progress, hairlines).
-         Never text, except the link shades 700 and 800. --- */
-  --live-50:  #E3F7F6;
-  --live-100: #C4EEEC;
-  --live-200: #92DEDC;
-  --live-300: #55CAC8;
-  --live-400: #1FBDBC;
-  --live-500: #00B1B0;
-  --live-600: #009897;
-  --live-700: #00807F;      /* link colour, 4.6:1 on white */
-  --live-800: #006564;      /* link hover */
-  --live-900: #0B4D4C;
+  /* role tokens, read by the components */
+  --background: var(--ground);
+  --foreground: var(--ink);
+  --surface: var(--white);
+  --surface-foreground: var(--ink);
+  --surface-alt: var(--ground);
+  --muted-foreground: var(--muted-text);
+  --label: var(--muted-text);
+  --neutral-400: var(--muted-text);
+  --neutral-600: var(--muted-text);
+  --neutral-700: var(--ink);
 
-  /* --- Glow colours: background light only, never text or fills --- */
-  --coral:   #FF8370;
-  --freesia: #FEC84D;
+  --primary: var(--teal);
+  --primary-hover: var(--teal);
+  --primary-foreground: var(--white);
+  --primary-surface: var(--teal-tint);
+  --primary-surface-foreground: var(--ink);
+  --secondary: var(--navy);
+  --secondary-hover: var(--navy);
+  --secondary-foreground: var(--white);
+  --link: var(--teal);
+  --link-hover: var(--teal);
+  --live: var(--teal);
+  --accent-surface: var(--teal-tint);
+  --accent-surface-foreground: var(--ink);
 
-  /* --- Neutrals: cool, crisp (90% of every surface) --- */
-  --ink:        #0E1330;   /* body text */
-  --ink-2:      #2A3048;
-  --label:      #4A5068;
-  --muted-text: #666C84;
-  --border-strong-c: #D5D8E3;
-  --border-c:   #E6E8F0;
-  --surface-alt-c: #F0F1F6;
-  --ground:     #F7F8FB;
-  --white:      #FFFFFF;
+  --border: var(--border-c);
+  --border-strong: var(--border-c);
+  --input: var(--border-c);
+  --ring: rgba(14, 116, 144, 0.25);
+  --ring-solid: var(--teal);
 
-  /* --- Compatibility aliases (names other repos already import) --- */
-  /* brand-* was azure; now the live blue-green, darkest steps are ink */
-  --brand-50:  var(--live-50);
-  --brand-100: var(--live-100);
-  --brand-200: var(--live-200);
-  --brand-300: var(--live-300);
-  --brand-400: var(--live-400);
-  --brand-500: var(--live-500);
-  --brand-600: var(--live-700);   /* was "link on light", still the link */
-  --brand-700: var(--live-800);
-  --brand-800: var(--live-900);
-  --brand-900: var(--ink-2);
-  --brand-950: var(--ink);        /* near-black: footer, CTA text, shadow tint */
+  --success: var(--emerald);
+  --success-surface: var(--emerald-tint);
+  --danger-text: var(--amber-dark);
+  --danger-surface: var(--amber-tint);
+  --danger-border: var(--amber);
 
-  /* accent-* was green (the CTA); now the fuchsia primary scale */
-  --accent-50:  var(--primary-50);
-  --accent-100: var(--primary-100);
-  --accent-200: var(--primary-200);
-  --accent-300: var(--primary-300);
-  --accent-400: var(--primary-400);
-  --accent-500: var(--primary-500);
-  --accent-600: var(--primary-600);
-  --accent-700: var(--primary-700);
-  --accent-800: var(--primary-800);
-  --accent-900: var(--primary-900);
+  /* shadows: the text colour at low opacity */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.12);
+  --shadow-cta: 0 6px 20px rgba(14, 116, 144, 0.25);
 
-  --neutral-0:   var(--white);
-  --neutral-50:  var(--ground);          /* page ground */
-  --neutral-100: var(--surface-alt-c);   /* alt surface, rails */
-  --neutral-200: var(--border-c);        /* border */
-  --neutral-300: var(--border-strong-c); /* strong border, input outline */
-  --neutral-400: #9A9FB3;                /* placeholder, disabled text */
-  --neutral-500: var(--muted-text);      /* secondary text */
-  --neutral-600: var(--label);           /* labels, meta */
-  --neutral-700: var(--ink-2);
-  --neutral-800: var(--ink);             /* primary body text */
-  --neutral-900: #080B1E;
-
-  /* --- Semantic (separate from the primary hue) --- */
-  --success:    #0B7A3E;  --success-surface: #E3F3E8;
-  --warning-text: #6B4E00; --warning-dot: #E5A400; --warning-surface: #FBF2DD;
-  --warning:    var(--warning-dot);
-  --danger-text: #A33A00; --danger-dot: #F2651B; --danger-surface: #FFF1E8;
-  --danger-border: rgba(242, 101, 27, 0.4);
-  --danger:     var(--danger-dot);   /* warm orange-red, never reads as the CTA */
-  --info:       var(--live-700);
-
-  /* --- Role tokens (light). Components read only these, never the scales. --- */
-  --background:          var(--ground);
-  --foreground:          var(--ink);
-  --surface:             var(--white);
-  --surface-foreground:  var(--ink);
-  --surface-alt:         var(--surface-alt-c);
-  --muted:               var(--surface-alt-c);
-  --muted-foreground:    var(--muted-text);
-
-  --primary:             var(--primary-600);  /* fuchsia CTA (#D91E50), white text ~5:1 */
-  --primary-hover:       var(--primary-700);
-  --primary-foreground:  #FFFFFF;
-  --primary-surface:     var(--primary-50);
-  --primary-surface-foreground: var(--primary-800);
-
-  --secondary:           var(--ink);          /* second filled action: ink, white text */
-  --secondary-hover:     #1E2446;
-  --secondary-foreground: #FFFFFF;
-
-  --link:                var(--live-700);
-  --link-hover:          var(--live-800);
-  --live:                var(--live-500);
-
-  --accent-surface:      var(--primary-surface);   /* faint highlight fill */
-  --accent-surface-foreground: var(--primary-surface-foreground);
-
-  --border:              var(--border-c);
-  --border-strong:       var(--border-strong-c);
-  --input:               var(--border-strong-c);
-  --ring:                rgba(217, 30, 80, 0.2);  /* 3px glow around a primary-bordered focus */
-  --ring-solid:          var(--primary-600);      /* 2px outlines, where a translucent ring would vanish */
-
-  /* --- Typography --- */
+  /* type, spacing, shape and motion: unchanged from the design system */
   --font-sans: "Open Sans", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
   --font-display: "Open Sans", "Segoe UI", system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace; /* eyebrows, keywords, links, ids, DNS, code */
-
-  /* Base 18px (1.125rem on a 16px root). Scale ~1.22. */
   --text-xs:   0.8125rem;  --lh-xs:   1.125rem; --ls-xs:   0;      /* 13 */
   --text-sm:   0.9375rem;  --lh-sm:   1.375rem; --ls-sm:   0;      /* 15 */
   --text-base: 1.125rem;   --lh-base: 1.75rem;  --ls-base: 0;      /* 18 / 1.55 */
@@ -176,16 +83,12 @@
   --text-5xl:  3.125rem;   --lh-5xl:  3.35rem;  --ls-5xl:  -0.022em; /* 50 */
   --text-6xl:  3.875rem;   --lh-6xl:  4rem;     --ls-6xl:  -0.026em; /* 62 */
   --text-7xl:  4.625rem;   --lh-7xl:  4.75rem;  --ls-7xl:  -0.03em;  /* 74 */
-
   --weight-normal: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
   --weight-bold: 700;
   --weight-extrabold: 800;
-
   --measure: 68ch;   /* max line length for running text */
-
-  /* --- Spacing (4px base; only the steps we actually use) --- */
   --space-0: 0;
   --space-1: 0.125rem;   /* 2 */
   --space-2: 0.25rem;    /* 4 */
@@ -201,19 +104,13 @@
   --space-14: 5rem;      /* 80 */
   --space-16: 6rem;      /* 96 */
   --space-20: 8rem;      /* 128 */
-
   --container: 1200px;
   --container-prose: 720px;
   --gutter: 1.25rem;    /* 20 desktop */
   --gutter-mobile: 1rem; /* 16 mobile */
-
-  /* Section rhythm  mobile-first, deliberately tighter than LeadGenJay desktop.
-     Use --section-y for vertical section padding; bump up at >=768px only. */
   --section-y: 2.5rem;        /* 40 mobile */
   --section-y-lg: 4rem;       /* 64 desktop */
   --block-gap: 1.25rem;       /* 20  gap between cards/blocks */
-
-  /* --- Radius --- */
   --radius-sm: 6px;    /* badge, tag */
   --radius-md: 10px;   /* button, input */
   --radius-lg: 12px;   /* card  base --radius */
@@ -221,37 +118,15 @@
   --radius-2xl: 24px;  /* hero media, feature block */
   --radius-full: 9999px;
   --radius: var(--radius-lg);
-
-  /* --- Border width --- */
   --border-width: 1px;
-
-  /* --- Shadow (ink-tinted, never pure black) --- */
-  --shadow-xs: 0 1px 2px rgba(14, 19, 48, 0.06);
-  --shadow-sm: 0 1px 3px rgba(14, 19, 48, 0.08), 0 1px 2px rgba(14, 19, 48, 0.04);
-  --shadow-md: 0 4px 12px rgba(14, 19, 48, 0.08);
-  --shadow-lg: 0 12px 28px rgba(14, 19, 48, 0.12);
-  --shadow-cta: 0 6px 20px rgba(255, 131, 112, 0.35);  /* coral glow, CTA only */
-
-  /* --- Motion --- */
   --duration-fast: 120ms;
   --duration-base: 180ms;
   --duration-slow: 280ms;
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* --- Decorative background (faint, breaks flat white) --- */
-  --dot-grid: radial-gradient(rgba(14, 19, 48, 0.07) 1px, transparent 1px);   /* background-size: var(--dot-grid-size) */
   --dot-grid-size: 20px;
-  --hero-glow: radial-gradient(520px 260px at 100% 0%, rgba(255, 131, 112, 0.22), transparent 70%),
-               radial-gradient(360px 200px at 0% 100%, rgba(254, 200, 77, 0.22), transparent 70%);
-  --hairline: linear-gradient(90deg, var(--primary-600), var(--live-500));   /* 2px header top line */
-  --grid-line: rgba(14, 19, 48, 0.07);   /* alias kept for older pages */
-  --hero-wash: var(--hero-glow);         /* alias kept for older pages */
 }
-
-/* --- Theme: Shine is light only. The previous dark overrides were removed, so
-       a dark OS setting or data-theme="dark" no longer changes any token. --- */
 
 /* ============================================================================
    Optional base layer. Include if the page has no reset of its own.
@@ -297,19 +172,20 @@
 .btn-primary { background: var(--primary); color: var(--primary-foreground); box-shadow: var(--shadow-sm); }
 .btn-primary:hover { background: var(--primary-hover); box-shadow: var(--shadow-md); transform: translateY(-1px); }
 
-/* Secondary = ink fill, white text. The "other" action, used sparingly. */
+/* Secondary = navy fill, white text. */
 .btn-secondary { background: var(--secondary); color: var(--secondary-foreground); box-shadow: var(--shadow-sm); }
 .btn-secondary:hover { background: var(--secondary-hover); box-shadow: var(--shadow-md); }
 
 .btn-ghost { background: var(--surface); color: var(--foreground); border-color: var(--border-strong); }
 .btn-ghost:hover { background: var(--surface-alt); border-color: var(--neutral-400); }
 
-/* Pulsing CTA  fuchsia halo ring over a coral glow, does not shift layout. */
+/* Pulsing CTA: teal halo ring, does not shift layout. */
 .btn-pulse { position: relative; animation: cta-halo 2.4s var(--ease-out) infinite; }
 @keyframes cta-halo {
-  0%   { box-shadow: 0 0 0 0 rgba(228, 34, 86, 0.5), 0 6px 20px rgba(255, 131, 112, 0.35); }
-  70%  { box-shadow: 0 0 0 14px transparent, 0 6px 20px rgba(255, 131, 112, 0.35); }
-  100% { box-shadow: 0 0 0 0 transparent, 0 6px 20px rgba(255, 131, 112, 0.35); }
+  0%   { box-shadow: 0 0 0 0 rgba(14, 116, 144, 0.45), 0 6px 20px rgba(14, 116, 144, 0.25); }
+  70%  { box-shadow: 0 0 0 14px transparent, 0 6px 20px rgba(14, 116, 144, 0.25); }
+  100% { box-shadow: 0 0 0 0 transparent, 0 6px 20px rgba(14, 116, 144, 0.25); }
+}
 }
 /* Light sheen sweep across the primary CTA. */
 .btn-sheen { position: relative; overflow: hidden; }
@@ -370,12 +246,12 @@ a.link:hover { color: var(--link-hover); text-decoration: underline; text-underl
 hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin: var(--space-8) 0; }
 
 /* --- Shine motion keyframes (count-up pop, live rows, toasts, skeletons) --- */
-@keyframes num-pop { 0% { transform: scale(1); } 30% { transform: scale(1.09); text-shadow: 0 0 22px rgba(255, 131, 112, 0.35); } 60% { transform: scale(0.98); } 100% { transform: scale(1); text-shadow: none; } }
+@keyframes num-pop { 0% { transform: scale(1); } 30% { transform: scale(1.09); text-shadow: 0 0 22px rgba(14, 116, 144, 0.3); } 60% { transform: scale(0.98); } 100% { transform: scale(1); text-shadow: none; } }
 @keyframes sheen { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(220%); } }
 @keyframes ping { 75%, 100% { transform: scale(2.2); opacity: 0; } }
 @keyframes bar-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes card-in { from { opacity: 0; transform: translateY(14px) scale(0.985); } to { opacity: 1; transform: none; } }
-@keyframes row-in { from { opacity: 0; transform: translateY(-8px); background: var(--primary-50); } to { opacity: 1; transform: none; background: transparent; } }
+@keyframes row-in { from { opacity: 0; transform: translateY(-8px); background: var(--teal-tint); } to { opacity: 1; transform: none; background: transparent; } }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translate(-50%, 0); } }
 @keyframes shimmer { from { background-position: -400px 0; } to { background-position: 400px 0; } }
 
@@ -392,8 +268,6 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   body{
     margin:0;
     background-color:var(--background);
-    background-image:var(--dot-grid);
-    background-size:var(--dot-grid-size) var(--dot-grid-size);
     color:var(--foreground);
     font-family:var(--font-sans);
     font-size:1rem;line-height:1.55;
@@ -401,7 +275,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
     padding-inline:var(--gutter-mobile);
     padding-block:0 var(--space-9);
   }
-  body::before{content:"";display:block;height:2px;background:var(--hairline);margin-inline:calc(var(--gutter-mobile) * -1)}
+  body::before{content:"";display:block;height:2px;background:var(--teal);margin-inline:calc(var(--gutter-mobile) * -1)}
   :focus-visible{outline:2px solid var(--ring-solid);outline-offset:2px}
   .wrap{max-width:var(--container-prose);margin:0 auto;display:flex;flex-direction:column;gap:var(--space-4);padding-top:var(--space-6)}
 
@@ -533,10 +407,10 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   input[type=range]{width:100%;accent-color:var(--primary);height:22px}
   .btn[disabled]{opacity:.6;cursor:default}
 
-  /* ---------- the plan: focus card with the one primary action ---------- */
+  /* ---------- the plan: focus card with the primary action ---------- */
   .plan{
     border:var(--border-width) solid var(--primary);border-radius:var(--radius-xl);
-    background:var(--hero-glow),var(--surface);box-shadow:var(--shadow-md);
+    background:var(--surface);box-shadow:var(--shadow-md);
     padding:var(--space-6) var(--space-5);margin-top:var(--space-3);
   }
   .plan h2{margin:0;font-size:var(--text-xl);font-weight:var(--weight-bold);letter-spacing:var(--ls-xl);line-height:1.25}
@@ -571,63 +445,61 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   .diagbtn{appearance:none;background:none;border:0;padding:var(--space-3);font:inherit;font-size:var(--text-xs);color:var(--muted-foreground);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
   .diagpanel{display:flex;flex-direction:column;gap:var(--space-3);align-items:flex-start}
   .diagpanel textarea{width:100%;font-family:var(--font-mono);font-size:var(--text-xs);line-height:1.5;border:var(--border-width) solid var(--input);border-radius:var(--radius-md);padding:var(--space-4);background:var(--surface);color:var(--foreground);resize:vertical}
-  /* ---------- colour: every block carries one brand colour, in a fixed order:
-     fuchsia, blue-green, coral, freesia, then fuchsia again. Coral and freesia are used as faint washes only. ---------- */
-  .c-fuchsia{--tint:var(--primary-50);--edge:var(--primary-200)}
-  .c-live{--tint:var(--live-50);--edge:var(--live-200)}
-  .c-coral{--tint:color-mix(in srgb,var(--coral) 14%,var(--surface));--edge:color-mix(in srgb,var(--coral) 60%,var(--surface))}
-  .c-freesia{--tint:color-mix(in srgb,var(--freesia) 20%,var(--surface));--edge:color-mix(in srgb,var(--freesia) 80%,var(--surface))}
-  .band,details{
-    position:relative;background:var(--tint,var(--surface));border:1.5px solid var(--edge,var(--border));
-    transition:border-color var(--duration-slow) var(--ease-standard),box-shadow var(--duration-slow) var(--ease-standard);
+  /* ---------- colour: every block carries one palette accent in a fixed order: teal, navy, emerald, then repeat ---------- */
+  .c-teal{--tint:var(--teal-tint);--strong:var(--teal)}
+  .c-navy{--tint:var(--navy-tint);--strong:var(--navy)}
+  .c-emerald{--tint:var(--emerald-tint);--strong:var(--emerald)}
+  .band,details,.plan{
+    position:relative;background:var(--tint);
+    border:var(--border-width) solid var(--border);border-left:4px solid var(--strong);
+    transition:background-color var(--duration-slow) var(--ease-standard),border-color var(--duration-slow) var(--ease-standard),box-shadow var(--duration-slow) var(--ease-standard);
   }
   details{overflow:visible}
-  .body,.costtotal,.band hr.rule{border-top-color:var(--edge,var(--border))}
-  .toggle,.counter button{border-color:var(--edge,var(--border-strong))}
-  .counter .val{background:var(--surface);border:var(--border-width) solid var(--edge,var(--border))}
+  .body,.costtotal,.band hr.rule{border-top-color:var(--border)}
+  .toggle,.counter button{border-color:var(--border)}
+  .counter .val{background:var(--surface);border:var(--border-width) solid var(--border)}
 
-  /* headings and step numbers: the strongest accent */
-  h1,.htitle,summary,.plan h2{color:var(--primary-hover)}
-  .steptag{color:var(--neutral-700)}
-  .steptag .n{background:var(--primary)}
+  /* headings: text colour with a teal accent underline */
+  h1,.htitle,.plan h2{color:var(--ink);text-decoration:underline;text-decoration-color:var(--teal);text-decoration-thickness:3px}
+  h1,.plan h2{text-underline-offset:6px}
+  .htitle{text-underline-offset:2px;padding-bottom:3px;margin-bottom:-3px}
+  summary{color:var(--ink)}
+
+  /* step numbers: strong teal with white text */
+  .steptag{color:var(--muted-text)}
+  .steptag .n{background:var(--teal)}
   .steptag .n b{color:var(--primary-foreground)}
-  #accountsOut{color:var(--primary-hover)}
+  .sub,.outrow .lead,.extras,.note,.hint,.desc,.counter .cap,.flabel,summary .chev{color:var(--muted-foreground)}
 
-  /* secondary text one step darker, so it stays AA on every tint */
-  .sub,.outrow .lead,.extras,.note,.hint,.desc,.counter .cap,.flabel,summary .chev{color:var(--neutral-600)}
+  /* conditional colour: teal until the freedom number is set, emerald once it is */
+  .wrap{--go:var(--teal)}
+  .wrap[data-goal="set"]{--go:var(--emerald)}
+  .c-go{--tint:var(--teal-tint);--strong:var(--go)}
+  .wrap[data-goal="set"] .c-go{--tint:var(--emerald-tint)}
+  select.big,.costtotal .sum,#accountsOut{color:var(--go)}
+  .wrap[data-goal="set"] .callout,.wrap[data-goal="set"] .callout .arrow{animation:none}
 
-  /* the result is the hero: solid fuchsia, white figures */
-  .hero-out{background:var(--primary);border-radius:var(--radius-lg);padding:var(--space-5) var(--space-4);box-shadow:var(--shadow-cta)}
+  /* the result is the hero: a solid block of the strongest accent with white figures */
+  .hero-out{background:var(--go);border-radius:var(--radius-lg);padding:var(--space-5) var(--space-4);box-shadow:var(--shadow-cta)}
   .hero-out .lead,.hero-out .num{color:var(--primary-foreground)}
-  .plan{position:relative;border-width:2px}
-  .plan.ready{background:var(--hero-glow),var(--primary-surface);box-shadow:var(--shadow-lg),var(--shadow-cta)}
+  .wrap[data-goal="set"] .hero-out{box-shadow:var(--shadow-md)}
+  .plan.ready{box-shadow:var(--shadow-lg)}
+  .band,details,.plan,.hero-out,.callout,#accountsOut,.steptag .n{
+    transition:background-color var(--duration-slow) var(--ease-standard),border-color var(--duration-slow) var(--ease-standard),color var(--duration-slow) var(--ease-standard),box-shadow var(--duration-slow) var(--ease-standard);
+  }
 
-  /* just updated: two soft halo pulses, then an accent border and a small label */
+  /* just updated: two soft amber pulses, then an amber border, tint and a small label */
   .updated-tag{
     display:none;position:absolute;top:-11px;right:var(--space-5);
-    background:var(--primary);color:var(--primary-foreground);
+    background:var(--amber);color:var(--white);
     font-family:var(--font-mono);font-size:0.75rem;font-weight:var(--weight-bold);letter-spacing:.08em;text-transform:uppercase;line-height:1;
     padding:5px var(--space-3);border-radius:var(--radius-sm);
   }
-  .is-updated{border-color:var(--primary)}
+  .band.is-updated,details.is-updated,.plan.is-updated{background:var(--amber-tint);border-color:var(--amber)}
   .is-updated > .updated-tag{display:inline-block}
-  .just-updated{animation:cta-halo 1.2s var(--ease-out) 2}
-  /* ---------- conditional colour: fuchsia until the freedom number is set, green once it is ---------- */
-  .wrap{--go:var(--primary);--go-text:var(--primary-hover);--go-tint:var(--primary-50);--go-edge:var(--primary-200)}
-  .wrap[data-goal="set"]{--go:var(--success);--go-text:var(--success);--go-tint:var(--success-surface);--go-edge:color-mix(in srgb,var(--success) 35%,var(--surface))}
-  .c-go{--tint:var(--go-tint);--edge:var(--go-edge)}
-  h1,.htitle,summary,.plan h2,#accountsOut,select.big,.costtotal .sum{color:var(--go-text)}
-  .steptag .n,.hero-out,.callout,.updated-tag{background:var(--go)}
-  .plan,.is-updated{border-color:var(--go)}
-  .band,details,.hero-out,.callout,h1,.htitle,summary,.plan,.plan h2,#accountsOut,.steptag .n{
-    transition:background-color var(--duration-slow) var(--ease-standard),border-color var(--duration-slow) var(--ease-standard),color var(--duration-slow) var(--ease-standard);
-  }
-  .wrap[data-goal="set"] .callout,.wrap[data-goal="set"] .callout .arrow{animation:none}
-  .wrap[data-goal="set"] .hero-out{box-shadow:var(--shadow-md)}
-  .wrap[data-goal="set"] .plan.ready{background:var(--success-surface);box-shadow:var(--shadow-lg)}
-  .just-updated{animation:go-halo 1.2s var(--ease-out) 2}
-  @keyframes go-halo{
-    0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--go) 45%,transparent)}
+  .just-updated{animation:amber-halo 1.2s var(--ease-out) 2}
+  @keyframes amber-halo{
+    0%{box-shadow:0 0 0 0 rgba(180,83,9,.45)}
     70%{box-shadow:0 0 0 14px transparent}
     100%{box-shadow:0 0 0 0 transparent}
   }
@@ -665,7 +537,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   </section>
 
   <!-- COST BUILDER -->
-  <details id="costs" class="c-live">
+  <details id="costs" class="c-navy">
     <summary>Build the number from your costs <span class="chev">+</span></summary>
     <div class="body">
       <p class="hint" style="margin-bottom:var(--space-4)">Everyone's fixed costs differ, so nothing here is assumed. Change the lines, then set it as your goal.</p>
@@ -679,7 +551,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   </details>
 
   <!-- STEP 2 -->
-  <section class="band c-coral" id="band2">
+  <section class="band c-emerald" id="band2">
     <div class="bandhead">
       <span class="steptag"><span class="n"><b>2</b></span> How</span>
       <h2 class="htitle"><span class="wide">Affiliate (40%) or Agency (100%)</span><span class="narrow">Affiliate or Agency</span></h2>
@@ -710,7 +582,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   </section>
 
   <!-- STEP 3 -->
-  <section class="band c-freesia" id="band3">
+  <section class="band c-teal" id="band3">
     <div class="bandhead">
       <span class="steptag"><span class="n"><b>3</b></span> How long</span>
       <h2 class="htitle">Your plan</h2>
@@ -735,7 +607,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   </section>
 
   <!-- ADVANCED -->
-  <details id="adv" class="c-live">
+  <details id="adv" class="c-navy">
     <summary>Advanced Settings <span class="chev">+</span></summary>
     <div class="body adv-body">
       <div class="field">
@@ -762,7 +634,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   </details>
 
   <!-- THE PLAN: email gate, then PDF -->
-  <section class="plan" id="plan" aria-labelledby="planTitle">
+  <section class="plan c-emerald" id="plan" aria-labelledby="planTitle">
     <div id="planGate">
       <form class="planform" id="planForm" novalidate>
         <h2 id="planTitle">Get your Freedom Plan as a PDF</h2>
@@ -812,7 +684,7 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
 /* ============================================ */
 
 (function(){
-  var VERSION = "1.4.1";
+  var VERSION = "1.5.0";
   var $ = function(id){ return document.getElementById(id); };
 
   /* ---------- logging: every step, input, warning and error is written to a log the visitor can copy ----------
@@ -1032,14 +904,14 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
     log("marked as updated", els.map(function(el){ return el.id; }).join(", "));
   }
 
-  /* The page is fuchsia until the visitor has set a freedom number, and green from then on. */
+  /* The page is teal until the visitor has set a freedom number, and emerald from then on. */
   var lastGoal = null;
   function applyGoal(){
     var state = S.goalSet ? "set" : "unset";
     if(state === lastGoal) return;
     lastGoal = state;
     document.querySelector(".wrap").setAttribute("data-goal", state);
-    log("colour state", state === "set" ? "freedom number set, page is green" : "freedom number not set yet, page is fuchsia");
+    log("colour state", state === "set" ? "freedom number set, page is emerald" : "freedom number not set yet, page is teal");
   }
   var lastShown = "";
   function render(){
@@ -1268,78 +1140,75 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
       FAM = "OpenSans"; W_BLACK = "black";
     }
     var C = {
-      ink:tok("--ink"), label:tok("--label"), muted:tok("--muted-text"), border:tok("--border-c"),
-      primary:tok("--primary-600"), money:tok("--primary-700"), tint:tok("--primary-50"), tintText:tok("--primary-800"),
-      live:tok("--live-500"), link:tok("--live-700"), white:tok("--white"),
-      edge:tok("--primary-200"), liveTint:tok("--live-50"), liveEdge:tok("--live-200"), coral:tok("--coral")
+      ink:tok("--ink"), muted:tok("--muted-text"), border:tok("--border-c"), white:tok("--white"),
+      teal:tok("--teal"), tealTint:tok("--teal-tint"), navy:tok("--navy"), navyTint:tok("--navy-tint"),
+      emerald:tok("--emerald"), emeraldTint:tok("--emerald-tint")
     };
-    function mix(a, b, p){ return a.map(function(v, i){ return Math.round(v * p + b[i] * (1 - p)); }); }
     var wrapEl = document.querySelector(".wrap");
     var goalSet = !!(wrapEl && wrapEl.getAttribute("data-goal") === "set");
-    var GO = goalSet ? tok("--success") : C.primary;
-    var GO_TEXT = goalSet ? tok("--success") : C.money;
-    var GO_TINT = goalSet ? tok("--success-surface") : C.tint;
-    var GO_EDGE = goalSet ? mix(tok("--success"), C.white, 0.35) : C.edge;
+    var GO = goalSet ? C.emerald : C.teal;
+    var GO_TINT = goalSet ? C.emeraldTint : C.tealTint;
     var W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), M = 48, CW = W - M*2;
     var aff = r.model === "affiliate";
     function color(c){ doc.setTextColor(c[0], c[1], c[2]); }
     function fill(c){ doc.setFillColor(c[0], c[1], c[2]); }
     function font(w, size){ doc.setFont(FAM, w); doc.setFontSize(size); }
 
-    /* 2pt hairline across the top: fuchsia to blue-green */
-    var STEPS = 80, i;
-    for(i=0;i<STEPS;i++){
-      var t = i / (STEPS - 1);
-      doc.setFillColor(
-        Math.round(C.primary[0] + (C.live[0]-C.primary[0])*t),
-        Math.round(C.primary[1] + (C.live[1]-C.primary[1])*t),
-        Math.round(C.primary[2] + (C.live[2]-C.primary[2])*t));
-      doc.rect(W/STEPS*i, 0, W/STEPS + 0.5, 3, "F");
-    }
+    /* teal hairline across the top */
+    fill(C.teal); doc.rect(0, 0, W, 3, "F");
 
-    /* header: eyebrow with a live dot, ink headline */
-    fill(C.live); doc.circle(M + 3, 51.5, 3, "F");
-    color(C.link); font(W_BOLD, 9);
+    /* header: eyebrow with a dot, ink headline with a teal accent bar */
+    fill(C.teal); doc.circle(M + 3, 51.5, 3, "F");
+    color(C.teal); font(W_BOLD, 9);
     doc.text("FREEDOM CALCULATOR", M + 12, 55, { charSpace:1.1 });
-    color(GO_TEXT); font(W_BLACK, 30);
+    color(C.ink); font(W_BLACK, 30);
     doc.text("Your Freedom Plan", M, 90);
-    font(W_REG, 11); color(C.label);
+    fill(C.teal); doc.rect(M, 97, 48, 3, "F");
+    font(W_REG, 11); color(C.muted);
     var pre = "Prepared for ";
-    doc.text(pre, M, 112);
+    doc.text(pre, M, 114);
     var px = M + doc.getTextWidth(pre);
     font(W_BOLD, 11); color(C.ink);
     if(!fonts && /[^\x20-\x7E¡-ÿ]/.test(name)){
       var img = textImage(name, 11, "rgb(" + C.ink.join(",") + ")");
-      doc.addImage(img.url, "PNG", px, 112 - img.base, img.w, img.h);
+      doc.addImage(img.url, "PNG", px, 114 - img.base, img.w, img.h);
     } else {
-      doc.text(name, px, 112);
+      doc.text(name, px, 114);
     }
     font(W_REG, 11); color(C.muted);
     var today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
-    doc.text(today, W - M, 112, { align:"right" });
-    doc.setDrawColor(C.live[0], C.live[1], C.live[2]); doc.setLineWidth(1);
+    doc.text(today, W - M, 114, { align:"right" });
+    doc.setDrawColor(C.border[0], C.border[1], C.border[2]); doc.setLineWidth(1);
     doc.line(M, 126, W - M, 126);
 
-    /* the three steps: white cards with a border */
+    /* a block: tint background, a 4 pt bar in the strong colour on the left, or a solid hero */
+    function block(x, by, w, h, st){
+      if(st.solid){
+        fill(st.strong); doc.roundedRect(x, by, w, h, 4, 4, "F");
+        return;
+      }
+      fill(st.strong); doc.roundedRect(x, by, w, h, 4, 4, "F");
+      fill(st.tint); doc.setDrawColor(C.border[0], C.border[1], C.border[2]); doc.setLineWidth(0.75);
+      doc.roundedRect(x + 4, by, w - 4, h, 4, 4, "FD");
+    }
     var y = 144;
     function step(n, tag, big, small, st){
-      fill(st.bg); doc.setDrawColor(st.edge[0], st.edge[1], st.edge[2]); doc.setLineWidth(1.2);
-      doc.roundedRect(M, y, CW, 76, 9, 9, "FD");
-      fill(st.dot); doc.circle(M + 26, y + 24, 9, "F");
+      block(M, y, CW, 76, st);
+      fill(st.dot); doc.circle(M + 30, y + 24, 9, "F");
       color(st.dotText); font(W_BOLD, 10);
-      doc.text(String(n), M + 26, y + 27.5, { align:"center" });
+      doc.text(String(n), M + 30, y + 27.5, { align:"center" });
       color(st.tag); font(W_BOLD, 8.5);
-      doc.text(tag, M + 42, y + 27, { charSpace:0.9 });
+      doc.text(tag, M + 46, y + 27, { charSpace:0.9 });
       color(st.big); font(W_BLACK, 22);
       doc.text(big, W - M - 18, y + 33, { align:"right" });
       color(st.small); font(W_REG, 10.5);
-      doc.text(small, M + 17, y + 58);
+      doc.text(small, M + 21, y + 58);
       y += 86;
     }
-    /* fuchsia tint, blue-green tint, then the result as the solid fuchsia hero */
-    var ST1 = { bg:GO_TINT, edge:GO_EDGE, dot:GO, dotText:C.white, tag:C.label, big:GO_TEXT, small:C.label };
-    var ST2 = { bg:C.liveTint, edge:C.liveEdge, dot:GO, dotText:C.white, tag:C.label, big:GO_TEXT, small:C.label };
-    var ST3 = { bg:GO, edge:GO, dot:C.white, dotText:GO, tag:C.white, big:C.white, small:C.white };
+    /* teal or emerald, navy, then the result as the solid hero */
+    var ST1 = { strong:GO, tint:GO_TINT, dot:C.teal, dotText:C.white, tag:C.muted, big:GO, small:C.muted };
+    var ST2 = { strong:C.navy, tint:C.navyTint, dot:C.teal, dotText:C.white, tag:C.muted, big:C.ink, small:C.muted };
+    var ST3 = { solid:true, strong:GO, dot:C.white, dotText:GO, tag:C.white, big:C.white, small:C.white };
     step(1, "HOW MUCH", fmt(r.freedomNumber) + " per month", "Your Freedom Number: the monthly income that sets you free.", ST1);
     step(2, "HOW", r.accountsNeeded + (r.accountsNeeded === 1 ? " ACCOUNT" : " ACCOUNTS"),
       aff ? "Affiliate: " + r.commissionPercent + "% of the " + fmt(r.accountPrice) + " plan, about " + fmt(r.incomePerAccount) + " per account each month."
@@ -1349,8 +1218,9 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
 
     /* inputs table */
     y += 16;
-    color(GO_TEXT); font(W_BOLD, 13);
+    color(C.ink); font(W_BOLD, 13);
     doc.text("Your numbers", M, y);
+    fill(C.teal); doc.rect(M, y + 5, 24, 2, "F");
     y += 10;
     var rows = [
       ["Freedom Number", fmt(r.freedomNumber) + " per month"],
@@ -1371,25 +1241,23 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
     doc.setDrawColor(C.border[0], C.border[1], C.border[2]); doc.setLineWidth(0.75);
     rows.forEach(function(row){
       y += 21;
-      color(C.label); font(W_REG, 10.5); doc.text(row[0], M, y);
+      color(C.muted); font(W_REG, 10.5); doc.text(row[0], M, y);
       color(C.ink); font(W_BOLD, 10.5); doc.text(row[1], W - M, y, { align:"right" });
       doc.line(M, y + 7, W - M, y + 7);
     });
 
-    /* CTA: a fuchsia button in a light panel */
+    /* CTA: emerald block with a teal button */
     var cy = H - 172;
-    var coralEdge = mix(C.coral, C.white, 0.6);
-    fill(mix(C.coral, C.white, 0.14)); doc.setDrawColor(coralEdge[0], coralEdge[1], coralEdge[2]); doc.setLineWidth(1.2);
-    doc.roundedRect(M, cy, CW, 92, 12, 12, "FD");
+    block(M, cy, CW, 92, { strong:C.emerald, tint:C.emeraldTint });
     color(C.ink); font(W_BOLD, 12.5);
-    doc.text("Next step: build this plan with a group in my 6-pillar cohort program.", M + 18, cy + 30);
+    doc.text("Next step: build this plan with a group in my 6-pillar cohort program.", M + 22, cy + 30);
     var label = "See the program";
     font(W_BOLD, 11);
-    var bw = doc.getTextWidth(label) + 36, bx = M + 18, by = cy + 46;
-    fill(C.primary); doc.roundedRect(bx, by, bw, 30, 7, 7, "F");
+    var bw = doc.getTextWidth(label) + 36, bx = M + 22, by = cy + 46;
+    fill(C.teal); doc.roundedRect(bx, by, bw, 30, 7, 7, "F");
     color(C.white); doc.text(label, bx + 18, by + 19.5);
     doc.link(bx, by, bw, 30, { url:PROGRAM_URL });
-    color(C.link); font(W_REG, 9.5);
+    color(C.teal); font(W_REG, 9.5);
     doc.textWithLink(PROGRAM_URL, bx + bw + 14, by + 19, { url:PROGRAM_URL });
 
     color(C.muted); doc.setFont(FAM === "OpenSans" ? "OpenSans" : "helvetica", FAM === "OpenSans" ? "normal" : "italic"); doc.setFontSize(9);

@@ -37,3 +37,7 @@ Every line has the time, the milliseconds since the page opened, a session id, a
 What is logged: the environment when the page opens (version, browser, viewport, connection, frame, referrer), every button press and changed field, every result shown, each step of loading the PDF tool and fonts with timings, each step of building and handing over the PDF, each lead attempt with HTTP status and timing, retries of waiting leads, script errors with a stack, files that fail to load, blocked requests, lost connection, and the page being hidden or closed while work is running. Name and email are never written in full.
 
 Each lead sent to the webhook also carries a `client` field with the version, session id, browser, and the last five warnings or errors of that visit.
+
+## Palette
+
+The page uses exactly this palette and nothing else (see the `:root` block at the top of `index.html`): text `#0F172A`, muted text `#475569`, page `#F5F7FA`, card `#FFFFFF`, borders `#E2E8F0`; accents Teal `#0E7490` on `#E6F4F7`, Navy `#1E3A8A` on `#E8EDFB`, Emerald `#047857` on `#E7F6F0`; attention Amber `#B45309` on `#FEF3E2` with `#92400E` text for warnings and errors. Blocks rotate teal, navy, emerald. The state before the colour change is tagged `before-color-fix`.
