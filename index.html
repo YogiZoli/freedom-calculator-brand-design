@@ -616,7 +616,7 @@ hr.rule { border: 0; border-top: var(--border-width) solid var(--border); margin
   .wrap{--go:var(--primary);--go-text:var(--primary-hover);--go-tint:var(--primary-50);--go-edge:var(--primary-200)}
   .wrap[data-goal="set"]{--go:var(--success);--go-text:var(--success);--go-tint:var(--success-surface);--go-edge:color-mix(in srgb,var(--success) 35%,var(--surface))}
   .c-go{--tint:var(--go-tint);--edge:var(--go-edge)}
-  h1,.htitle,summary,.plan h2,#accountsOut{color:var(--go-text)}
+  h1,.htitle,summary,.plan h2,#accountsOut,select.big,.costtotal .sum{color:var(--go-text)}
   .steptag .n,.hero-out,.callout,.updated-tag{background:var(--go)}
   .plan,.is-updated{border-color:var(--go)}
   .band,details,.hero-out,.callout,h1,.htitle,summary,.plan,.plan h2,#accountsOut,.steptag .n{
@@ -812,7 +812,7 @@ var PROGRAM_URL = "https://example.com/6-pillar-cohort";   // placeholder: the 6
 /* ============================================ */
 
 (function(){
-  var VERSION = "1.4.0";
+  var VERSION = "1.4.1";
   var $ = function(id){ return document.getElementById(id); };
 
   /* ---------- logging: every step, input, warning and error is written to a log the visitor can copy ----------
